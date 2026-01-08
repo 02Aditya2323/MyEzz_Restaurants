@@ -176,12 +176,6 @@
   transform: translateY(0);
 }
 
-.acceptBtn:disabled {
-  background-color: #94a3b8;
-  cursor: not-allowed;
-  transform: none;
-}
-
 .rejectBtn {
   flex: 1;
   background-color: transparent;
@@ -203,14 +197,6 @@
 
 .rejectBtn:active {
   transform: translateY(0);
-}
-
-.rejectBtn:disabled {
-  background-color: #f1f5f9;
-  color: #94a3b8;
-  border-color: #e2e8f0;
-  cursor: not-allowed;
-  transform: none;
 }
 
 .markReadyBtn {
@@ -239,12 +225,6 @@
   transform: translateY(0);
 }
 
-.markReadyBtn:disabled {
-  background-color: #94a3b8;
-  cursor: not-allowed;
-  transform: none;
-}
-
 .handToRiderBtn {
   width: 100%;
   background-color: #047857;
@@ -265,12 +245,6 @@
 
 .handToRiderBtn:active {
   transform: translateY(0);
-}
-
-.handToRiderBtn:disabled {
-  background-color: #94a3b8;
-  cursor: not-allowed;
-  transform: none;
 }
 
 /* Responsive Design */

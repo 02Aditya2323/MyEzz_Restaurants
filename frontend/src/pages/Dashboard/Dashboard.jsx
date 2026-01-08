@@ -9,7 +9,6 @@ function Dashboard() {
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [processingOrders, setProcessingOrders] = useState(new Set());
 
   // Generate mock orders on component mount
   useEffect(() => {
@@ -23,23 +22,23 @@ function Dashboard() {
       const mockOrders = [
         {
           id: 'ORD001',
-          customerName: 'John Smith',
+          customerName: 'Yug Patel',
           items: [
             { name: 'Margherita Pizza', quantity: 1 },
             { name: 'Caesar Salad', quantity: 1 }
           ],
-          total: 24.99,
+          total: 249.99,
           status: 'new',
           verificationCode: generateVerificationCode()
         },
         {
           id: 'ORD002',
-          customerName: 'Sarah Johnson',
+          customerName: 'Aksh Maheshwari',
           items: [
             { name: 'Chicken Burger', quantity: 2 },
             { name: 'French Fries', quantity: 1 }
           ],
-          total: 18.50,
+          total: 185.00,
           status: 'preparing',
           prepTime: 25,
           acceptedAt: new Date(Date.now() - 5 * 60 * 1000), // 5 minutes ago
@@ -47,11 +46,11 @@ function Dashboard() {
         },
         {
           id: 'ORD003',
-          customerName: 'Mike Davis',
+          customerName: 'Nayan Chellani',
           items: [
-            { name: 'Fish & Chips', quantity: 1 }
+            { name: 'French Fries', quantity: 1 }
           ],
-          total: 15.75,
+          total: 157.50,
           status: 'ready',
           verificationCode: generateVerificationCode()
         }
@@ -79,27 +78,12 @@ function Dashboard() {
     setModalOpen(true);
   };
 
-  const handleRejectOrder = async (orderId) => {
-    setProcessingOrders(prev => new Set([...prev, orderId]));
-    
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
+  const handleRejectOrder = (orderId) => {
     setOrders(orders.filter(order => order.id !== orderId));
-    setProcessingOrders(prev => {
-      const newSet = new Set(prev);
-      newSet.delete(orderId);
-      return newSet;
-    });
   };
 
-  const handleConfirmPrepTime = async (prepTime) => {
+  const handleConfirmPrepTime = (prepTime) => {
     if (selectedOrder) {
-      setProcessingOrders(prev => new Set([...prev, selectedOrder.id]));
-      
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
       setOrders(orders.map(order => 
         order.id === selectedOrder.id 
           ? { 
@@ -110,47 +94,20 @@ function Dashboard() {
             }
           : order
       ));
-      
-      setProcessingOrders(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(selectedOrder.id);
-        return newSet;
-      });
     }
     setSelectedOrder(null);
   };
 
-  const handleMarkReady = async (orderId) => {
-    setProcessingOrders(prev => new Set([...prev, orderId]));
-    
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
+  const handleMarkReady = (orderId) => {
     setOrders(orders.map(order => 
       order.id === orderId 
         ? { ...order, status: 'ready' }
         : order
     ));
-    
-    setProcessingOrders(prev => {
-      const newSet = new Set(prev);
-      newSet.delete(orderId);
-      return newSet;
-    });
   };
 
-  const handleHandToRider = async (orderId) => {
-    setProcessingOrders(prev => new Set([...prev, orderId]));
-    
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
+  const handleHandToRider = (orderId) => {
     setOrders(orders.filter(order => order.id !== orderId));
-    setProcessingOrders(prev => {
-      const newSet = new Set(prev);
-      newSet.delete(orderId);
-      return newSet;
-    });
   };
 
   const newOrders = orders.filter(order => order.status === 'new');
@@ -204,7 +161,6 @@ function Dashboard() {
                 order={order}
                 onAccept={handleAcceptOrder}
                 onReject={handleRejectOrder}
-                isProcessing={processingOrders.has(order.id)}
               />
             ))}
             {newOrders.length === 0 && (
@@ -228,7 +184,6 @@ function Dashboard() {
                 key={order.id}
                 order={order}
                 onMarkReady={handleMarkReady}
-                isProcessing={processingOrders.has(order.id)}
               />
             ))}
             {preparingOrders.length === 0 && (
@@ -252,7 +207,6 @@ function Dashboard() {
                 key={order.id}
                 order={order}
                 onHandToRider={handleHandToRider}
-                isProcessing={processingOrders.has(order.id)}
               />
             ))}
             {readyOrders.length === 0 && (

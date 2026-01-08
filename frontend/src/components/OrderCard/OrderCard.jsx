@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Clock, CheckCircle, User } from 'lucide-react';
-import RingSpinner from '../Spinner/Spinner';
 import styles from './OrderCard.module.css';
 
-const OrderCard = ({ order, onAccept, onReject, onMarkReady, onHandToRider, isProcessing = false }) => {
+const OrderCard = ({ order, onAccept, onReject, onMarkReady, onHandToRider }) => {
   const [timeRemaining, setTimeRemaining] = useState(null);
 
   useEffect(() => {
@@ -71,7 +70,7 @@ const OrderCard = ({ order, onAccept, onReject, onMarkReady, onHandToRider, isPr
       </div>
 
       <div className={styles.orderTotal}>
-        Total: <strong>${order.total.toFixed(2)}</strong>
+        Total: <strong>₹{order.total.toFixed(2)}</strong>
       </div>
 
       {order.status === 'preparing' && timeRemaining !== null && (
@@ -94,16 +93,14 @@ const OrderCard = ({ order, onAccept, onReject, onMarkReady, onHandToRider, isPr
             <button 
               className={styles.acceptBtn}
               onClick={() => onAccept(order.id)}
-              disabled={isProcessing}
             >
-              {isProcessing ? <RingSpinner size={16} /> : 'Accept'}
+              Accept
             </button>
             <button 
               className={styles.rejectBtn}
               onClick={() => onReject(order.id)}
-              disabled={isProcessing}
             >
-              {isProcessing ? <RingSpinner size={16} /> : 'Reject'}
+              Reject
             </button>
           </>
         )}
@@ -112,16 +109,9 @@ const OrderCard = ({ order, onAccept, onReject, onMarkReady, onHandToRider, isPr
           <button 
             className={styles.markReadyBtn}
             onClick={() => onMarkReady(order.id)}
-            disabled={isProcessing}
           >
-            {isProcessing ? (
-              <RingSpinner size={16} />
-            ) : (
-              <>
-                <CheckCircle size={16} />
-                Mark Ready
-              </>
-            )}
+            <CheckCircle size={16} />
+            Mark Ready
           </button>
         )}
 
@@ -129,9 +119,8 @@ const OrderCard = ({ order, onAccept, onReject, onMarkReady, onHandToRider, isPr
           <button 
             className={styles.handToRiderBtn}
             onClick={() => onHandToRider(order.id)}
-            disabled={isProcessing}
           >
-            {isProcessing ? <RingSpinner size={16} /> : 'Handed to Rider'}
+            Handed to Rider
           </button>
         )}
       </div>
