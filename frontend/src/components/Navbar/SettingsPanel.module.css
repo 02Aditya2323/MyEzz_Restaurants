@@ -125,17 +125,23 @@
 }
 
 /* Toggle Switch - iOS Style */
+/* Reset global button styles first */
 .toggleSwitch {
   width: 44px;
   height: 21px;
+  min-height: 21px !important;
+  min-width: 44px !important;
   background: rgba(120, 120, 128, 0.32);
   border: 1px solid rgba(0, 0, 0, 0.1);
-  border-radius: 11px;
-  padding: 0;
+  border-radius: 11px !important;
+  padding: 0 !important;
+  margin: 0;
   cursor: pointer;
   position: relative;
   transition: background 0.3s ease;
   flex-shrink: 0;
+  overflow: visible;
+  font-size: inherit;
 }
 
 .toggleSwitch:focus {
