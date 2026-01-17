@@ -297,3 +297,15 @@
 [data-theme="light"] .toggleOff {
   background: #CBD5E1 !important;
 }
+
+/* Light mode - Delete button visibility */
+[data-theme="light"] .deleteBtn {
+  background: rgba(220, 38, 38, 0.08);
+  border-color: rgba(220, 38, 38, 0.4);
+  color: #DC2626;
+}
+
+[data-theme="light"] .deleteBtn:hover {
+  background: rgba(220, 38, 38, 0.15);
+  border-color: #DC2626;
+}
