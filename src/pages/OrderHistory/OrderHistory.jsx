@@ -21,7 +21,7 @@ const OrderHistory = () => {
 
         return {
           id: `ORD${2000 + i}`,
-          customerName: ['Yug Patel', 'Aksh Maheshwari', 'Nayan Chellani', 'Rahul Verma', 'Sneha Gupta'][Math.floor(Math.random() * 5)],
+          customerName: ['Priya Sharma', 'Amit Patel', 'Sneha Reddy', 'Vikram Singh', 'Anjali Gupta', 'Rohan Mehta', 'Kavita Iyer', 'Arjun Nair', 'Meera Rao', 'Siddharth Malhotra', 'Pooja Hegde', 'Varun Dhawan', 'Alia Bhatt', 'Ranbir Kapoor'][Math.floor(Math.random() * 14)],
           items: [
             { name: 'Margherita Pizza', quantity: Math.floor(Math.random() * 2) + 1 },
             { name: 'Cold Coffee', quantity: Math.floor(Math.random() * 2) + 1 },
