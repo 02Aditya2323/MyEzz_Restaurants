@@ -10,6 +10,8 @@ import Report from './pages/Report/Report';
 import Profile from './pages/Profile/Profile';
 import Landing from './pages/Landing/Landing';
 import OrderHistory from './pages/OrderHistory/OrderHistory';
+import RestaurantSignup from './pages/RestaurantSignup';
+import RestaurantLogin from './pages/RestaurantLogin';
 
 import './App.css';
 
@@ -57,17 +59,27 @@ function RestaurantLayoutContent() {
   );
 }
 
-function App() {
+export default function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Navigate to="/1/menu" replace />} />
+        {/* Public Routes */}
+        <Route path="/" element={<Landing />} />
+        <Route path="/signup" element={<RestaurantSignup />} />
+        <Route path="/login" element={<RestaurantLogin />} />
+
+        {/* Restaurant Specific Routes */}
+        {/* The RestaurantLayout maps to /:restaurantId/* so it handles sub-routes */}
         <Route path="/:restaurantId/*" element={<RestaurantLayout />} />
-        <Route path="*" element={<Navigate to="/1/menu" replace />} />
+
+        {/* Helper: if someone types just /:restaurantId, go to menu by default */}
+        {/* Note: This is handled inside RestaurantLayout routes usually, but we can have a fallback here if needed, 
+            though the wildcard above handles it. The RestaurantLayout definition handles redirects. */}
+
+        {/* Catch-all - redirect to landing */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
   );
 }
-
-export default App;
 
