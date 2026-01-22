@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import SuccessToast from '../../components/ui/SuccessToast';
 import {
   ChefHat,
   Bike,
@@ -60,7 +61,16 @@ const STATS = [
 
 function Landing() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [wordIndex, setWordIndex] = useState(0);
+  const [showLogoutToast, setShowLogoutToast] = useState(false);
+
+  useEffect(() => {
+    if (location.state?.showLogoutToast) {
+      setShowLogoutToast(true);
+      window.history.replaceState({}, document.title);
+    }
+  }, [location]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -79,6 +89,14 @@ function Landing() {
 
   return (
     <div className={styles.landingPage}>
+      {/* Success Toast for Logout */}
+      {showLogoutToast && (
+        <SuccessToast 
+          message="Logged out successfully"
+          isVisible={showLogoutToast}
+          onClose={() => setShowLogoutToast(false)}
+        />
+      )}
       {/* Film Grain Noise Overlay */}
       <div className={styles.noiseOverlay} />
 
