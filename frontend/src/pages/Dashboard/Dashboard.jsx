@@ -5,65 +5,97 @@ import PrepTimeModal from '../../components/PrepTimeModal/PrepTimeModal';
 import RejectionModal from '../../components/RejectionModal/RejectionModal';
 import RingSpinner from '../../components/Spinner/Spinner';
 import styles from './Dashboard.module.css';
+import { fetchActiveOrders, updateOrderStatus } from '../../services/centralOrderService';
+import { useParams } from 'react-router-dom';
 
 function Dashboard() {
+  const { restaurantId } = useParams();
   const [orders, setOrders] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [rejectionModalOpen, setRejectionModalOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [orderToReject, setOrderToReject] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
+  // Fetch orders from Central Backend
   useEffect(() => {
-    const loadOrders = async () => {
-      setLoading(true);
+    const loadOrders = async (isBackground = false) => {
+      // Only show full loading spinner on first load, not background polls
+      if (!isBackground) {
+        setLoading(true);
+      }
+      setError(null);
 
-      // Simulate network delay
-      await new Promise(resolve => setTimeout(resolve, 2000));
-
-      const mockOrders = [
-        {
-          id: 'ORD001',
-          customerName: 'Yug Patel',
-          items: [
-            { name: 'Margherita Pizza', quantity: 1 },
-            { name: 'Caesar Salad', quantity: 1 }
-          ],
-          total: 249.99,
-          status: 'new',
-          verificationCode: generateVerificationCode()
-        },
-        {
-          id: 'ORD002',
-          customerName: 'Aksh Maheshwari',
-          items: [
-            { name: 'Chicken Burger', quantity: 2 },
-            { name: 'French Fries', quantity: 1 }
-          ],
-          total: 185.00,
-          status: 'preparing',
-          prepTime: 25,
-          acceptedAt: new Date(Date.now() - 5 * 60 * 1000),
-          verificationCode: generateVerificationCode()
-        },
-        {
-          id: 'ORD003',
-          customerName: 'Nayan Chellani',
-          items: [
-            { name: 'French Fries', quantity: 1 }
-          ],
-          total: 157.50,
-          status: 'ready',
-          verificationCode: generateVerificationCode()
+      try {
+        // Fetch all active orders from Central Backend
+        const data = await fetchActiveOrders();
+        
+        // Transform backend data to match frontend format
+        const transformedOrders = data.map(order => ({
+          id: order._id,
+          customerName: order.customer_id, // In real app, fetch customer name from Supabase
+          items: order.items.map(item => ({
+            name: item.name,
+            quantity: item.qty
+          })),
+          total: order.total_amount || order.items.reduce((sum, item) => sum + (item.price * item.qty), 0),
+          status: mapBackendStatus(order.status),
+          verificationCode: generateVerificationCode(),
+          prepTime: order.prepTime,
+          acceptedAt: order.acceptedAt ? new Date(order.acceptedAt) : null
+        }));
+        
+        setOrders(transformedOrders);
+      } catch (err) {
+        console.error('Failed to fetch orders:', err);
+        // Only show error message on main load, simpler handling for background
+        if (!isBackground) {
+            setError('Failed to load orders. Using demo data.');
+            // Fallback to demo data for development
+             setOrders([
+               {
+                 id: 'DEMO001',
+                 customerName: 'Demo Customer',
+                 items: [{ name: 'Demo Item', quantity: 1 }],
+                 total: 99.99,
+                 status: 'new',
+                 verificationCode: 'DEMO'
+               }
+             ]);
         }
-      ];
-
-      setOrders(mockOrders);
-      setLoading(false);
+      } finally {
+        if (!isBackground) {
+            setLoading(false);
+        }
+      }
     };
 
-    loadOrders();
-  }, []);
+    // Initial load
+    loadOrders(false);
+    
+    // Poll for new orders every 5 seconds (background update)
+    const interval = setInterval(() => loadOrders(true), 5000);
+    return () => clearInterval(interval);
+  }, [restaurantId]);
+
+  // Map backend status to frontend status
+  function mapBackendStatus(backendStatus) {
+    const statusMap = {
+      'pending': 'new',
+      'preparing': 'preparing',
+      'ready': 'ready',
+      // Rider-managed statuses - these shouldn't show in restaurant dashboard
+      // but if they do, map them to 'ready' or filter them out
+      'accepted': 'new',  // Rider accepted, but Restaurant still treats as new/preparing
+      'pickup_completed': 'ready',
+      'delivery_started': 'ready',
+      'out_for_delivery': 'ready',
+      'delivered': 'completed',
+      'cancelled': 'rejected'
+    };
+    return statusMap[backendStatus] || 'new';
+  }
 
   function generateVerificationCode() {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -95,32 +127,55 @@ function Dashboard() {
     }
   };
 
-  const handleConfirmPrepTime = (prepTime) => {
+  const handleConfirmPrepTime = async (prepTime) => {
     if (selectedOrder) {
-      setOrders(orders.map(order =>
-        order.id === selectedOrder.id
-          ? {
-            ...order,
-            status: 'preparing',
-            prepTime,
-            acceptedAt: new Date()
-          }
-          : order
-      ));
+      try {
+        // Update status to 'preparing' in Central Backend
+        await updateOrderStatus(selectedOrder.id, 'preparing');
+        
+        setOrders(orders.map(order =>
+          order.id === selectedOrder.id
+            ? {
+              ...order,
+              status: 'preparing',
+              prepTime,
+              acceptedAt: new Date()
+            }
+            : order
+        ));
+      } catch (err) {
+        console.error('Failed to update order status:', err);
+      }
     }
     setSelectedOrder(null);
   };
 
-  const handleMarkReady = (orderId) => {
-    setOrders(orders.map(order =>
-      order.id === orderId
-        ? { ...order, status: 'ready' }
-        : order
-    ));
+  const handleMarkReady = async (orderId) => {
+    try {
+      // Update status to 'ready' in Central Backend
+      await updateOrderStatus(orderId, 'ready');
+      
+      setOrders(orders.map(order =>
+        order.id === orderId
+          ? { ...order, status: 'ready' }
+          : order
+      ));
+    } catch (err) {
+      console.error('Failed to mark order as ready:', err);
+    }
   };
 
-  const handleHandToRider = (orderId) => {
-    setOrders(orders.filter(order => order.id !== orderId));
+  const handleHandToRider = async (orderId) => {
+    try {
+      // Restaurant confirms rider has the order
+      // NOTE: We do NOT change status here - the Rider app controls status transitions
+      // from 'ready' -> 'pickup_completed' -> 'delivery_started' -> 'delivered'
+      // This just removes the order from the Restaurant's active view
+      setOrders(orders.filter(order => order.id !== orderId));
+      console.log(`Order ${orderId} handed to rider - removed from Restaurant view`);
+    } catch (err) {
+      console.error('Failed to hand order to rider:', err);
+    }
   };
 
   const newOrders = orders.filter(order => order.status === 'new');
